@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "outDir": "dist",
+    "noImplicitReturns": true,
+    "sourceMap": true,
+    "strict": true,
+    "baseUrl": ".",
+    "rootDirs": ["./src", "./__tests__"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "allowJs": true
+  },
+  "compileOnSave": true,
+  "include": ["src"],
+  "exclude": ["node_modules", "aws-sdk"]
+}
