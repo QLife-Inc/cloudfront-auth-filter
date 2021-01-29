@@ -66,5 +66,14 @@ describe(S3AuthenticationProvider, () => {
 
       expect(getObject).lastCalledWith({ Bucket: 'dummy', Key: `dummy/${dummyHost}/${dummyUser}` })
     })
+
+    it('skip authentication when bucket is empty', async () => {
+      const getObject = mockGetObjectOnce('error', 500)
+
+      const provider = new S3AuthenticationProvider('', 'dummy')
+      expect(await provider.authenticate(dummyRequest)).toBeFalsy()
+
+      expect(getObject).not.toBeCalled()
+    })
   })
 })
