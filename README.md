@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/QLife-Inc/cloudfront-auth-filter.svg?branch=main)](https://travis-ci.org/QLife-Inc/cloudfront-auth-filter)
+[![Coverage Status](https://coveralls.io/repos/github/QLife-Inc/cloudfront-auth-filter/badge.svg?branch=main)](https://coveralls.io/github/QLife-Inc/cloudfront-auth-filter?branch=main)
+
 # cloudfront-auth-filter
 
 AWS Lambda@Edge function for authentication and authorization with Amazon CloudFront.
