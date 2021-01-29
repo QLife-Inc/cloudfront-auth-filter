@@ -36,6 +36,14 @@ export AUTH_FILE_S3_PREFIX=cf-auth/htpasswd/
 yarn build
 ```
 
+#### Variables description
+
+| name | description | default | example |
+| --- | --- | --- | --- |
+| ALLOWED_CIDR_BLOCKS | アクセスを許可する IP アドレスの範囲を示す CIDR ブロック。カンマ区切りで複数指定可能。 | '127.0.0.1/32' | '10.5.0.0/16, 172.43.16.0/21' |
+| AUTH_FILE_S3_BUCKET | 認証ファイルが格納されている S3 バケット。未指定の場合は IP アドレス制限のみ行う。 | '' |  'my-cf-auth-bucket' |
+| AUTH_FILE_S3_PREFIX | 認証ファイルが格納されている S3 バケットのプレフィクス。先頭にスラッシュを付けてはいけない。末尾スラッシュはあってもなくても可（ありに正規化される）。 | '' | 'cloudfront/htpasswd/' |
+
 ### 3. Upload the authorization file to s3
 
 The content of the file is a plaintext password.  
