@@ -11,11 +11,25 @@ const unauthorizedResponse = {
   },
 }
 
+enum AuthChainStrategy {
+  OR = 'or',
+  AND = 'and',
+}
+
+function toAuthChainStrategy(value: string) {
+  if (value.toLowerCase() === AuthChainStrategy.AND) {
+    return AuthChainStrategy.AND
+  }
+  return AuthChainStrategy.OR
+}
+
 export class CloudFrontAuthorizer {
   readonly #allowedCidrBlocks: CidrBlocks
+  readonly #chainStrategy: AuthChainStrategy
 
-  constructor(allowedCidrBlocks: string[], private readonly authProvider: AuthenticationProvider) {
+  constructor(allowedCidrBlocks: string[], private readonly authProvider: AuthenticationProvider, strategy: string) {
     this.#allowedCidrBlocks = new CidrBlocks(allowedCidrBlocks)
+    this.#chainStrategy = toAuthChainStrategy(strategy)
   }
 
   async authorize(request: CloudFrontRequest): Promise<CloudFrontRequest | CloudFrontResultResponse> {
@@ -23,7 +37,10 @@ export class CloudFrontAuthorizer {
       return request
     }
 
-    console.warn(`The client ip '${request.clientIp}' is not allowed.`)
+    if (this.#chainStrategy === AuthChainStrategy.AND) {
+      console.warn(`The client ip '${request.clientIp}' is not allowed.`)
+      return unauthorizedResponse
+    }
 
     if (await this.authProvider.authenticate(request)) {
       return request

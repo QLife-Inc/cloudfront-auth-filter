@@ -4,7 +4,7 @@ import { CloudFrontAuthorizer } from './cloudfront-authorizer'
 import env from './env'
 
 const provider = new S3AuthenticationProvider(env.authFileBucket, env.authFilePath)
-const authorizer = new CloudFrontAuthorizer(env.allowedCidrBlocks, provider)
+const authorizer = new CloudFrontAuthorizer(env.allowedCidrBlocks, provider, env.chainStrategy)
 
 export const lambdaHandler: CloudFrontRequestHandler = event => {
   const request = event.Records[0].cf.request
