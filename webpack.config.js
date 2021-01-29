@@ -37,6 +37,9 @@ module.exports = {
       // IP 制限 `OR` Basic 認証なのか、IP 制限 `AND` Basic 認証なのかを選択。
       // 許可される値は `or` もしくは `and` （大文字小文字区別なし）。
       AUTH_CHAIN_STRATEGY: 'or',
+      // 認証ファイルのディスクキャッシュ生存期間（秒）。`0` は無期限, `0` 未満はキャッシュ無効。
+      // Lambda 関数の `/tmp` ディレクトリを利用する。
+      AUTH_FILE_CACHE_TTL: '60',
     }),
   ],
 }

@@ -20,7 +20,7 @@ describe('Lambda handler', () => {
   it('run authorization and authentication for request', async () => {
     process.env.ALLOWED_CIDR_BLOCKS = '10.0.0.0/8'
     process.env.AUTH_FILE_S3_BUCKET = 'dummy'
-    process.env.AUTH_FILE_S3_PREFIX = 'dummy/'
+    process.env.AUTH_FILE_S3_PREFIX = `${new Date().getTime() * Math.random()}/`
 
     const dummyKey = `${process.env.AUTH_FILE_S3_PREFIX}${dummyHost}/${dummyUser}`
 

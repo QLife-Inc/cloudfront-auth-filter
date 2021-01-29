@@ -7,6 +7,10 @@ jest.mock('aws-sdk')
 
 const dummyKey = `dummy/${dummyHost}/${dummyUser}`
 
+function mockS3Behavior(mockFunctions: any) {
+  mocked(S3).mockImplementationOnce((): any => mockFunctions)
+}
+
 describe(S3AuthenticationProvider, () => {
   describe('#authenticate', () => {
     it('returns true when authorization header is valid', async () => {
@@ -14,7 +18,7 @@ describe(S3AuthenticationProvider, () => {
 
       const listObjectsV2 = mockListObjectV2Once(key)
       const getObject = mockGetObjectOnce(dummyPassword)
-      mocked(S3).mockImplementationOnce((): any => ({ listObjectsV2, getObject }))
+      mockS3Behavior({ listObjectsV2, getObject })
 
       const provider = new S3AuthenticationProvider('dummy')
       expect(await provider.authenticate(dummyRequest)).toBeTruthy()
@@ -26,7 +30,7 @@ describe(S3AuthenticationProvider, () => {
     it('returns false when credentials is not match', async () => {
       const listObjectsV2 = mockListObjectV2Once(dummyKey)
       const getObject = mockGetObjectOnce('hoge')
-      mocked(S3).mockImplementationOnce((): any => ({ listObjectsV2, getObject }))
+      mockS3Behavior({ listObjectsV2, getObject })
 
       const provider = new S3AuthenticationProvider('dummy', 'dummy')
       expect(await provider.authenticate(dummyRequest)).toBeFalsy()
@@ -49,7 +53,7 @@ describe(S3AuthenticationProvider, () => {
     it('returns false when object is missing', async () => {
       const listObjectsV2 = mockListObjectV2Once('difference-key')
       const getObject = mockGetObjectOnce(dummyPassword)
-      mocked(S3).mockImplementationOnce((): any => ({ listObjectsV2 }))
+      mockS3Behavior({ listObjectsV2, getObject })
 
       const provider = new S3AuthenticationProvider('dummy', 'dummy')
       expect(await provider.authenticate(dummyRequest)).toBeFalsy()
@@ -61,7 +65,7 @@ describe(S3AuthenticationProvider, () => {
     it('returns false when object body is empty', async () => {
       const listObjectsV2 = mockListObjectV2Once(dummyKey)
       const getObject = mockGetObjectOnce('')
-      mocked(S3).mockImplementationOnce((): any => ({ listObjectsV2, getObject }))
+      mockS3Behavior({ listObjectsV2, getObject })
 
       const provider = new S3AuthenticationProvider('dummy', 'dummy')
       expect(await provider.authenticate(dummyRequest)).toBeFalsy()
@@ -73,13 +77,32 @@ describe(S3AuthenticationProvider, () => {
     it('skip authentication when bucket is empty', async () => {
       const listObjectsV2 = mockListObjectV2Once(dummyKey)
       const getObject = mockGetObjectOnce('skip')
-      mocked(S3).mockImplementationOnce((): any => ({ getObject }))
+      mockS3Behavior({ listObjectsV2, getObject })
 
       const provider = new S3AuthenticationProvider('', 'dummy')
       expect(await provider.authenticate(dummyRequest)).toBeFalsy()
 
       expect(listObjectsV2).not.toBeCalled()
       expect(getObject).not.toBeCalled()
+    })
+
+    it('not called s3 api function when cached', async () => {
+      const prefix = '' + new Date().getTime() * Math.random()
+      const key = `${prefix}/${dummyHost}/${dummyUser}`
+
+      const listObjectsV2 = mockListObjectV2Once(key)
+      const getObject = mockGetObjectOnce(dummyPassword)
+      mockS3Behavior({ listObjectsV2, getObject })
+
+      const provider = new S3AuthenticationProvider('dummy', prefix, 10)
+
+      expect(await provider.authenticate(dummyRequest)).toBeTruthy()
+      expect(await provider.authenticate(dummyRequest)).toBeTruthy()
+
+      expect(listObjectsV2).toBeCalledTimes(1)
+      expect(listObjectsV2).lastCalledWith({ Bucket: 'dummy', Prefix: key })
+      expect(getObject).toBeCalledTimes(1)
+      expect(getObject).lastCalledWith({ Bucket: 'dummy', Key: key })
     })
   })
 })
