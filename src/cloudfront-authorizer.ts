@@ -20,6 +20,7 @@ export class CloudFrontAuthorizer {
 
   async authorize(request: CloudFrontRequest): Promise<CloudFrontRequest | CloudFrontResultResponse> {
     if (this.#allowedCidrBlocks.contains(request.clientIp)) {
+      console.warn(`The client ip '${request.clientIp}' is not allowed.`)
       return request
     }
 
