@@ -1,13 +1,7 @@
 import { S3 } from 'aws-sdk'
 import { CloudFrontRequest } from 'aws-lambda'
 import { getAuthorization, getRequestHost } from './request'
-import { Credentials, parseAuthorizationHeader } from './authentication'
-
-function getCredentialsFromRequest(request: CloudFrontRequest): Credentials | null {
-  const authorization = getAuthorization(request)
-  if (!authorization) return null
-  return parseAuthorizationHeader(authorization)
-}
+import { parseAuthorizationHeader } from './authentication'
 
 function buildObjectKey(prefix: string, domain: string, username: string) {
   if (!prefix) return `${domain}/${username}`
@@ -36,8 +30,22 @@ export class S3AuthenticationProvider implements AuthenticationProvider {
   }
 
   async authenticate(request: CloudFrontRequest): Promise<boolean> {
-    const credentials = getCredentialsFromRequest(request)
-    if (!credentials) return false
+    if (!this.bucket) {
+      console.info('Skip s3 file authentication because no s3 bucket is specified.')
+      return false
+    }
+
+    const authorization = getAuthorization(request)
+    if (!authorization) {
+      console.warn('The request does not include authorization header.')
+      return false
+    }
+
+    const credentials = parseAuthorizationHeader(authorization)
+    if (!credentials) {
+      console.warn('The authorization header is not a valid value.')
+      return false
+    }
 
     const host = getRequestHost(request)
     const password = await this.getPasswordFromS3Object(host, credentials.username)

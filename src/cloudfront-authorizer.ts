@@ -23,6 +23,8 @@ export class CloudFrontAuthorizer {
       return request
     }
 
+    console.warn(`The client ip '${request.clientIp}' is not allowed.`)
+
     if (await this.authProvider.authenticate(request)) {
       return request
     }
