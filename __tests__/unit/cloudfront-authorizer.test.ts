@@ -1,8 +1,6 @@
 import { CloudFrontAuthorizer } from '../../src/cloudfront-authorizer'
 import { CloudFrontResultResponse } from 'aws-lambda'
-import { dummyHost, dummyPassword, dummyRequest, dummyUser } from './dummy-request'
-import { mockGetObjectOnce } from './mock-get-object'
-import { S3AuthenticationProvider } from '../../src/authentication-provider'
+import { dummyRequest } from './dummy-request'
 
 const authenticateMock = jest.fn()
 const mockProvider = { authenticate: authenticateMock }

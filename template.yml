@@ -22,10 +22,6 @@ Parameters:
   AuthFileS3BucketPrefix:
     Description: S3 bucket prefix where the authentication file is stored
     Type: String
-  LogRetensionInDays:
-    Description: Retension in days for CloudWatch Logs
-    Type: Number
-    Default: 7
 
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
@@ -33,37 +29,53 @@ Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
+  # Create role manually because edgelambda.amazonaws.com is required
+  CloudFrontAuthFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${FunctionName}-role"
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - edgelambda.amazonaws.com
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: GetAuthFilePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub "arn:aws:s3:::${AuthFileS3BucketName}"
+                Condition:
+                  StringLike: { s3:prefix: [ !Sub "${AuthFileS3BucketPrefix}*" ] }
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub "arn:aws:s3:::${AuthFileS3BucketName}/${AuthFileS3BucketPrefix}*"
+
   CloudFrontAuthFunction:
     Type: AWS::Serverless::Function
-    DependsOn:
-      - FunctionLogGroup
     Properties:
       FunctionName: !Ref FunctionName
       CodeUri: dist/
       Handler: main.lambdaHandler
       Runtime: nodejs12.x
-      MemorySize: 256
-      Timeout: 10
+      MemorySize: 128 # Only 128 MB allowed for Lambda@Edge
+      Timeout: 5 # Cannot be greater than 5 seconds for Lambda@Edge
       Description: AWS Lambda@Edge function for authentication and authorization with Amazon CloudFront.
       AutoPublishAlias: prod
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - Statement:
-          - Effect: Allow
-            Action: s3:GetObject
-            Resource: !Sub "arn:aws:s3:::${AuthFileS3BucketName}/${AuthFileS3BucketPrefix}*"
-
-  FunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub "/aws/lambda/${FunctionName}"
-      RetentionInDays: !Ref LogRetensionInDays
+      Role: !GetAtt CloudFrontAuthFunctionRole.Arn
 
 Outputs:
-  FunctionQualifiedArn:
-    Value: !Sub
-      - "${Arn}:${Version}"
-      - Arn: !GetAtt CloudFrontAuthFunction.Arn
-        Version: !GetAtt CloudFrontAuthFunction.Version
+  FunctionArn:
+    Value: !GetAtt CloudFrontAuthFunction.Arn
     Export:
-      Name: !Sub "${FunctionName}QualifiedArn"
+      Name: !Sub "${FunctionName}Arn"
