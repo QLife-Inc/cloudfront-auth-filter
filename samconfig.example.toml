@@ -6,13 +6,12 @@ stack_name = "CloudFrontAuthFilter"
 s3_bucket = "your-s3-bucket-name"
 s3_prefix = "sam-src/CloudFrontAuthFilter"
 region = "us-east-1"
-capabilities = "CAPABILITY_IAM"
+capabilities = "CAPABILITY_NAMED_IAM"
 
 parameter_overrides = """ \
 ParameterKey=FunctionName,ParameterValue=CloudFrontAuthFilter \
 ParameterKey=AuthFileS3BucketName,ParameterValue=your-auth-file-bucket \
 ParameterKey=AuthFileS3BucketPrefix,ParameterValue=cf-htpasswd/ \
-ParameterKey=LogRetentionInDays,ParameterValue=7 \
 """
 
 # for each environment
@@ -24,11 +23,10 @@ ParameterKey=LogRetentionInDays,ParameterValue=7 \
 #s3_bucket = "your-s3-bucket-name"
 #s3_prefix = "sam-src/CloudFrontAuthFilter"
 #region = "us-east-1"
-#capabilities = "CAPABILITY_IAM"
+#capabilities = "CAPABILITY_NAMED_IAM"
 #
 #parameter_overrides = """ \
 #ParameterKey=FunctionName,ParameterValue=CloudFrontAuthFilter \
 #ParameterKey=AuthFileS3BucketName,ParameterValue=your-auth-file-bucket \
 #ParameterKey=AuthFileS3BucketPrefix,ParameterValue=cf-htpasswd/ \
-#ParameterKey=LogRetentionInDays,ParameterValue=7 \
 #"""

@@ -7,8 +7,7 @@
         "test": "jest --roots __tests__/unit",
         "integ-test": "jest --roots __tests__/integration",
         "build": "webpack",
-        "lint": "eslint --fix --ext .js,.ts .",
-        "deploy": "sam deploy --region us-east-1 --guided"
+        "lint": "eslint --fix --ext .js,.ts ."
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.71",
