@@ -47,6 +47,7 @@ yarn build
 | AUTH_FILE_S3_BUCKET | 認証ファイルが格納されている S3 バケット。未指定の場合は IP アドレス制限のみ行う。 | '' |  'my-cf-auth-bucket' |
 | AUTH_FILE_S3_PREFIX | 認証ファイルが格納されている S3 バケットのプレフィクス。先頭にスラッシュを付けてはいけない。末尾スラッシュはあってもなくても可（ありに正規化される）。 | '' | 'cloudfront/htpasswd/' |
 | AUTH_CHAIN_STRATEGY | IP 制限 `OR` Basic 認証なのか、IP 制限 `AND` Basic 認証なのかを選択。許可される値は `or` もしくは `and` （大文字小文字区別なし）。 | 'or' | 'And' |
+| AUTH_FILE_CACHE_TTL | 認証ファイルのディスクキャッシュ生存期間（秒）。`0` は無期限, `0` 未満はキャッシュ無効。Lambda 関数の `/tmp` ディレクトリを利用する。 | '60' | '300', '-1' |
 
 ### 3. Upload the authorization file to s3
 

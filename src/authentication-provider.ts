@@ -2,6 +2,7 @@ import { S3 } from 'aws-sdk'
 import { CloudFrontRequest } from 'aws-lambda'
 import { getAuthorization, getRequestHost } from './request'
 import { parseAuthorizationHeader } from './authentication'
+import { Cache, DiskCache, NoopCache } from './cache'
 
 function buildObjectKey(prefix: string, domain: string, username: string) {
   if (!prefix) return `${domain}/${username}`
@@ -26,9 +27,11 @@ export interface AuthenticationProvider {
 
 export class S3AuthenticationProvider implements AuthenticationProvider {
   readonly #s3: S3
+  readonly #cache: Cache
 
-  constructor(private readonly bucket: string, private readonly prefix?: string) {
+  constructor(private readonly bucket: string, private readonly prefix = '', cacheTtl = -1) {
     this.#s3 = new S3()
+    this.#cache = cacheTtl >= 0 ? new DiskCache(cacheTtl) : NoopCache
   }
 
   async authenticate(request: CloudFrontRequest): Promise<boolean> {
@@ -67,6 +70,6 @@ export class S3AuthenticationProvider implements AuthenticationProvider {
 
   private getPasswordFromS3Object(host: string, username: string): Promise<string | null> {
     const key = buildObjectKey(this.prefix || '', host, username)
-    return getS3ObjectText(this.#s3, this.bucket, key)
+    return this.#cache.fetch(key, () => getS3ObjectText(this.#s3, this.bucket, key))
   }
 }
